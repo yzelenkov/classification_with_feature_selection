@@ -20,26 +20,6 @@ import pandas as pd
 def version():
     return "0.9"
 
-def dataRead(filename, norm_distr = False):
-# Read source data and:
-# if norm_dist = True - scale it to zero mean and unit variance (standard normally distributed data)
-# else - scale features to range {-1;1}
-    data = []
-    with open(filename, newline='') as csvfile:
-        reader = csv.reader(csvfile, delimiter=';')
-        feature_names = next(reader)
-        for row in reader:
-            data.append([])
-            for index,item in enumerate(row):
-                data[-1].append(float(item.replace(',','.')))
-    data1 = np.array(data)
-    if norm_distr:
-        data = preprocessing.scale(data1)
-    else:
-        max_abs_scaler = preprocessing.MaxAbsScaler()
-        data = max_abs_scaler.fit_transform(data1)
-    return np.array(feature_names), data
-
 class Classifier:
     def __init__(self,type,number_of_features):
         self.type = type
@@ -364,58 +344,3 @@ def EvolveEnsemble(setOfClf, pop_size,generations,prob_of_crossover,data,target,
         pop = copy.deepcopy(new_pop)
 
     return fitness_story,eb
-
-if __name__ == '__main__':
-    f = '../Trading/Nornikel.txt'
-
-    df = pd.read_csv(f,sep=';', usecols=[2,3,4,5,6,7,8], index_col=[0], parse_dates=[[0, 1]])
-    df['Target'] = [*map(lambda x : 1 if x < 10000 else -1, df['<CLOSE>'])]
-
-    train = df.loc['2016-06-01' : '2016-12-31']
-    test  = df.loc['2017-01-01' : '2017-12-31']
-
-    data_train = np.array(train.iloc[:,0:5])
-    target_train = np.array(train.iloc[:,5:6]).reshape((data_train.shape[0]))
-
-
-    print(data_train)
-    print(target_train)
-
-    print("Train dataset: %5d rows and %d features" %(data_train.shape[0], data_train.shape[1]))
-#    print("Test dataset:  %5d rows and %d features" %(target_train.shape[0], target_train.shape[1]))
-
-    number_of_features = data_train.shape[1]
-
-    pop_size = 5
-    generations = 5
-    prob_of_crossover = 0.5
-
-    clf_set = ('knn','lr','nb','dt','mlp','lda','qda') #rf','et','mlp','svm')
-
-    fitness = []
-    setOfClf = []
-
-    for clf_type in clf_set:
-        fitness_story, bi = EvolveClf (clf_type,number_of_features,pop_size,generations,prob_of_crossover,data_train,target_train)
-        print('%3s: accuracy start = %5.3f fin = %5.3f (+/- %5.3f) features = %2d prec/rec = %5.3f/%5.3f' %(clf_type,fitness_story[0],bi.accuracy,bi.std * 2,bi.n_features,bi.precision,bi.recall))
-        fitness.append(fitness_story)
-        setOfClf.append(bi)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
