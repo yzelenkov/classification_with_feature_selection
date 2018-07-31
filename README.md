@@ -1,5 +1,4 @@
 # classification_with_feature_selection
-Classifier training with feature selection
 
 It is a simple tutorial on how to train classifiers with a selection of an optimal set of features
 
